@@ -12,20 +12,23 @@ public class ErrorInfo {
     @ColumnInfo(name = "id")
     @NonNull
 
-    private final String id;
+    private Integer id;
 
     @ColumnInfo(name = "error")
     private final String error;
 
-    public ErrorInfo(@NonNull String id, String error) {
-        this.id = id;
+    public ErrorInfo(String error) {
         this.error = error;
+    }
+
+    public void setId(@NonNull Integer id) {
+        this.id = id;
     }
 
     public String getError(){return this.error;}
 
     @NonNull
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 

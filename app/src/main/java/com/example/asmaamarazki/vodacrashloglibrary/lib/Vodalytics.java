@@ -2,10 +2,14 @@ package com.example.asmaamarazki.vodacrashloglibrary.lib;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -34,13 +38,26 @@ public class Vodalytics {
             }
 
             @Override
-            public void onActivityResumed(Activity activity) {
+            public void onActivityResumed(final Activity activity) {
 
 
                 if(!((AppCompatActivity)activity).getSupportFragmentManager().getFragments().isEmpty()){
                     for(Fragment fragment : ((AppCompatActivity)activity).getSupportFragmentManager().getFragments()){
                         if(fragment != null)
                             addScreensOpend(fragment.getClass().getSimpleName());
+
+
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                // get Data
+                                DataSource dataSource = DataSource.getAppDataSource(activity);
+                                Log.d("SHOW_DB", "onActivityResumed:" + dataSource.getErrorInfo().getAllErrors().toString());
+
+                            }
+                        });
+
+
 
                     }
                 }
@@ -92,8 +109,22 @@ public class Vodalytics {
         return screensOpend;
     }
 
-    public void addScreensOpend(String screenOpend) {
+    public void addScreensOpend(final String screenOpend) {
         this.screensOpend.add(screenOpend);
+
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                // Insert Data
+                DataSource.getAppDataSource(application).getErrorInfo().insertError(new ErrorInfo(screenOpend));
+
+                   }
+        });
+
+        //DataSource dataSource = DataSource.getAppDataSource(application);
+        //dataSource.getErrorInfo().insertError(new ErrorInfo(screenOpend));
+
         Log.e("TAG", "addScreensOpend: " + screensOpend.toString() );
     }
 
