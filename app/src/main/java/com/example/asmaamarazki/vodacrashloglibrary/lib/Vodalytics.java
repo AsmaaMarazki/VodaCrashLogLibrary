@@ -1,18 +1,27 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib;
 
+import android.app.Application;
+
 public class Vodalytics {
     private static volatile Vodalytics vodalytics;
+    private static Application application;
 
     private Vodalytics(){
         if(vodalytics !=null)
             throw new RuntimeException("Use getInstance() method to get the single instance of the class.");
     }
 
-    public static Vodalytics getInstance(){
+    /**
+     * @param application
+     * @since Application class
+     */
+    public static Vodalytics with(Application application){
         if (vodalytics==null) {
             synchronized (Vodalytics.class){
-                if (vodalytics==null)
-                vodalytics = new Vodalytics();
+                if (vodalytics==null) {
+                    vodalytics = new Vodalytics();
+                    Vodalytics.application = application;
+                }
             }
         }
         return vodalytics;
