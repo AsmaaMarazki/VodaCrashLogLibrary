@@ -2,8 +2,7 @@ package com.example.asmaamarazki.vodacrashloglibrary.lib;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -11,10 +10,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
-import com.example.asmaamarazki.vodacrashloglibrary.lib.network.NetworkManager;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class Vodalytics {
     private static volatile Vodalytics vodalytics;
@@ -133,5 +133,38 @@ public class Vodalytics {
     }
 
 
+
+    private void log(String errorCode , String errorMsg , boolean isNetworkError, String rawResponse,Throwable throwable){
+        initElastics( errorCode ,  errorMsg ,  isNetworkError,  rawResponse, throwable);
+        //check connectivity then call network client or room
+
+    }
+
+
+    private void initElastics(String errorCode , String errorMsg , boolean isNetworkError, String rawResponse,Throwable throwable){
+      //set elastics data
+        // set device data
+       /* DeviceData deviceData = new DeviceData(NetworkUtils.isWifiConnected(application.getApplicationContext()),
+                        NetworkUtils.isMobileConnected(application.getApplicationContext(),
+                        PhoneUtils.getDeviceName(),
+                        PhoneUtils.getAndroidVersion()));
+
+        // set user data
+        ArrayList<String> otherAccounts=new ArrayList<>();
+        for (int i=0;i<Configurations.getAllUsers().size();i++){
+            otherAccounts.add(Configurations.getAllUsers().get(i).getUserAccountInfoModel().getEncryptMsisdn());
+        }
+        //Configurations.getAllUsers().get(0).getUserAccountInfoModel().getEncryptMsisdn();
+
+        UserData userData = new UserData(LoggedUser.getInstance().isSeamless(),LoggedUser.getInstance().getAccount().getEncryptMsisdn(), otherAccounts,
+                LoggedUser.getInstance().getAccount().getRatePlanCode(), LoggedUser.getInstance().getAccount().getTariffModelName() ,LoggedUser.getInstance().getAccount().getAccountInfoRoles());
+
+        //set error codes
+
+        ErrorCodes errorCodes = new ErrorCodes(Constants.API_URL,rawResponse,isNetworkError,errorCode,errorMsg);
+        elasticsData =new ElasticsData(deviceData,errorCodes,new Journey(screensOpend.toString()),userData);
+
+*/
+    }
 }
 
