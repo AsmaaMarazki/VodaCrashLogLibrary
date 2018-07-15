@@ -6,6 +6,13 @@ public class DeviceData {
     private String deviceType;
     private String deviceOsVersion;
 
+    public DeviceData(boolean isWifiConnected, boolean isMobileDataConnected, String deviceType, String deviceOsVersion) {
+        this.isWifiConnected = isWifiConnected;
+        this.isMobileDataConnected = isMobileDataConnected;
+        this.deviceType = deviceType;
+        this.deviceOsVersion = deviceOsVersion;
+    }
+
     public boolean isWifiConnected() {
         return isWifiConnected;
     }

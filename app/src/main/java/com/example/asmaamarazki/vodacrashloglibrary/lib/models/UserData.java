@@ -1,13 +1,24 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib.models;
 
+import java.util.ArrayList;
+
 public class UserData {
 
     private boolean isSeamless;
     private String msisdn;
-    private String[] msisdnAllAccounts;
+    private ArrayList<String> msisdnAllAccounts;
     private String ratePlanCode;
     private String tireId;
     private String[] userRoles;
+
+    public UserData(boolean isSeamless, String msisdn, ArrayList<String> msisdnAllAccounts, String ratePlanCode, String tireId, String[] userRoles) {
+        this.isSeamless = isSeamless;
+        this.msisdn = msisdn;
+        this.msisdnAllAccounts = msisdnAllAccounts;
+        this.ratePlanCode = ratePlanCode;
+        this.tireId = tireId;
+        this.userRoles = userRoles;
+    }
 
     public boolean isSeamless() {
         return isSeamless;
@@ -25,11 +36,11 @@ public class UserData {
         this.msisdn = msisdn;
     }
 
-    public String[] getMsisdnAllAccounts() {
+    public ArrayList<String> getMsisdnAllAccounts() {
         return msisdnAllAccounts;
     }
 
-    public void setMsisdnAllAccounts(String[] msisdnAllAccounts) {
+    public void setMsisdnAllAccounts(ArrayList<String> msisdnAllAccounts) {
         this.msisdnAllAccounts = msisdnAllAccounts;
     }
 

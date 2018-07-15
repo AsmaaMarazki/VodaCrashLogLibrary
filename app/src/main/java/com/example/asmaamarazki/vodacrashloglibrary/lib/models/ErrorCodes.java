@@ -1,9 +1,17 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib.models;
 
 public class ErrorCodes {
-   private String apiUrl;
+    public ErrorCodes(String apiUrl, String rawResponse, boolean isNetworkError, String errorCode, String errorMessage) {
+        this.apiUrl = apiUrl;
+        this.rawResponse = rawResponse;
+        this.isNetworkError = isNetworkError;
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+    }
+
+    private String apiUrl;
    private String rawResponse;
-   private String errorType;
+   private boolean isNetworkError;
    private String errorCode;
    private String errorMessage;
 
@@ -23,12 +31,12 @@ public class ErrorCodes {
         this.rawResponse = rawResponse;
     }
 
-    public String getErrorType() {
-        return errorType;
+    public boolean isNetworkError() {
+        return isNetworkError;
     }
 
-    public void setErrorType(String errorType) {
-        this.errorType = errorType;
+    public void setNetworkError(boolean networkError) {
+        isNetworkError = networkError;
     }
 
     public String getErrorCode() {
