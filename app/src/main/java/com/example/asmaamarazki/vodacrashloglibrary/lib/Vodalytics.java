@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.ElasticsData;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -141,6 +142,7 @@ public class Vodalytics {
     public static void log(String key,String msg){
 
     }
+    public static void log(ElasticsData elasticsData){}
 
 
 }
