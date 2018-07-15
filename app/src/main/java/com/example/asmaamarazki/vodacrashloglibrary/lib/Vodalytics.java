@@ -2,7 +2,8 @@ package com.example.asmaamarazki.vodacrashloglibrary.lib;
 
 import android.app.Activity;
 import android.app.Application;
-import android.os.AsyncTask;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -10,17 +11,17 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.network.NetworkManager;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public class Vodalytics {
     private static volatile Vodalytics vodalytics;
     private static Application application;
-    private ArrayList<String> screensOpend = new ArrayList<>();
+    private ArrayList<String> screensOpened = new ArrayList<>();
 
+    public static ErrorInfo latestError;
     private Vodalytics(){
         if(vodalytics !=null)
             throw new RuntimeException("Use getInstance() method to get the single instance of the class.");
@@ -107,35 +108,26 @@ public class Vodalytics {
     }
 
 
-    public ArrayList<String> getScreensOpend() {
-        return screensOpend;
+    public ArrayList<String> getScreensOpened() {
+        return screensOpened;
     }
 
     public void addScreensOpend(final String screenOpend) {
-        this.screensOpend.add(screenOpend);
+        this.screensOpened.add(screenOpend);
 
-
-        /*
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                // Insert Data
-                DataSource.getAppDataSource(application).getErrorInfo().insertError(new ErrorInfo(screenOpend));
-
-                   }
-        });*/
-
-        //DataSource dataSource = DataSource.getAppDataSource(application);
-        //dataSource.getErrorInfo().insertError(new ErrorInfo(screenOpend));
-
-        Log.e("TAG", "addScreensOpend: " + screensOpend.toString() );
+        Log.e("TAG", "addScreensOpend: " + screensOpened.toString() );
     }
 
     public static void log(Throwable throwable){
 
     }
     public static void log(String msg){
+        ErrorInfo error = new ErrorInfo(msg);
+        latestError = error;
+        SharedPreferences sharedPreferences = application.getSharedPreferences("TEMP", Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString("errCODE",error.getUuid()).apply();
+        NetworkManager networkManager = new NetworkManager();
+        networkManager.sendCrashLogToServer();
 
     }
     public static void log(String key,String msg){

@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
 
 
-@Database(entities = {ErrorInfo.class}, version = 1)
+@Database(entities = {ErrorInfo.class}, version = 2)
 public abstract class DataSource extends RoomDatabase{
 
     public abstract DataSourceDao getErrorInfo();
