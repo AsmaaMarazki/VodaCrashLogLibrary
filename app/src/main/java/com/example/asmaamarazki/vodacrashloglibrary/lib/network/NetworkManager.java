@@ -1,5 +1,7 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib.network;
 
+import android.util.Log;
+
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.ConnectionQuality;
 import com.androidnetworking.common.Priority;
@@ -18,7 +20,7 @@ public class NetworkManager {
         AndroidNetworking.post(ElasticEndPoints.ENDPOINT_ELASTIC_SAVE_CRASH)
                 .addBodyParameter("userId", "1") // will send the Crash log object here
                 .setTag(ELASTIC_REQUEST_TAG)
-                .setPriority(Priority.LOW)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsObject(BaseResponse.class, new ParsedRequestListener<BaseResponse>() {
                     @Override
@@ -39,14 +41,20 @@ public class NetworkManager {
         ConnectionQuality connectionQuality = AndroidNetworking.getCurrentConnectionQuality();
         if (connectionQuality == ConnectionQuality.EXCELLENT) {
             // save to server
-            sendReportToServer();
+           // sendReportToServer();
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.EXCELLENT);
         } else if (connectionQuality == ConnectionQuality.MODERATE) {
             // save to server
-            sendReportToServer();
+            //sendReportToServer();
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.MODERATE);
         } else if (connectionQuality == ConnectionQuality.POOR) {
             // do something
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.POOR);
+
         } else if (connectionQuality == ConnectionQuality.UNKNOWN) {
             // do something
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.UNKNOWN);
+
         }
     }
 }

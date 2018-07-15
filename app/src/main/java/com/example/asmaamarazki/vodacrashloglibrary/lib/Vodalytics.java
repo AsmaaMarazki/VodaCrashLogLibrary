@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -40,13 +42,12 @@ public class Vodalytics {
             @Override
             public void onActivityResumed(final Activity activity) {
 
-
-                if(!((AppCompatActivity)activity).getSupportFragmentManager().getFragments().isEmpty()){
-                    for(Fragment fragment : ((AppCompatActivity)activity).getSupportFragmentManager().getFragments()){
-                        if(fragment != null)
-                            addScreensOpend(fragment.getClass().getSimpleName());
-
-
+                ((AppCompatActivity)activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentResumed(@NonNull FragmentManager fm, @NonNull Fragment f) {
+                        super.onFragmentResumed(fm, f);
+                        addScreensOpend(f.getClass().getSimpleName());
+                        /*
                         AsyncTask.execute(new Runnable() {
                             @Override
                             public void run() {
@@ -56,13 +57,14 @@ public class Vodalytics {
 
                             }
                         });
-
-
-
+                        */
                     }
+
+                }, true);
+
                 }
 
-            }
+
 
             @Override
             public void onActivityPaused(Activity activity) {
@@ -113,6 +115,8 @@ public class Vodalytics {
         this.screensOpend.add(screenOpend);
 
 
+        /*
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -120,7 +124,7 @@ public class Vodalytics {
                 DataSource.getAppDataSource(application).getErrorInfo().insertError(new ErrorInfo(screenOpend));
 
                    }
-        });
+        });*/
 
         //DataSource dataSource = DataSource.getAppDataSource(application);
         //dataSource.getErrorInfo().insertError(new ErrorInfo(screenOpend));
