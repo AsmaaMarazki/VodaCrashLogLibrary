@@ -15,17 +15,16 @@ import com.example.asmaamarazki.vodacrashloglibrary.lib.Vodalytics;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
 
-import java.util.List;
-
 import static com.example.asmaamarazki.vodacrashloglibrary.lib.network.ElasticEndPoints.ELASTIC_REQUEST_TAG;
 
 public class NetworkManager {
 
-    public void sendCrashLogToServer() {
-        checkTheCurrentConnectionQuality();
+    //Call it to save a crash and it handles the logic
+    public void sendCrashLogToServer(ErrorInfo error) {
+        checkTheCurrentConnectionQuality(error);
     }
 
-    private void sendReportToServer() {
+    private void sendReportToServer(final ErrorInfo error) {
         AndroidNetworking.post(ElasticEndPoints.ENDPOINT_ELASTIC_SAVE_CRASH)
                 //.addQueryParameter("test","2")
                 .addBodyParameter("userId", "1") // will send the Crash log object here
@@ -37,14 +36,12 @@ public class NetworkManager {
                     public void onResponse(BaseResponse response) {
                         //Handle the return of success of saving to server
                         //clear the item from db if there
-                        SharedPreferences sharedPreferences = Application.getApp().getSharedPreferences("TEMP", Context.MODE_PRIVATE);
-                        final String error = sharedPreferences.getString("errCODE","");
                         AsyncTask.execute(new Runnable() {
                             @Override
                             public void run() {
                                 // Insert Data
-                                ErrorInfo errorInfo = DataSource.getAppDataSource(Application.getApp()).getErrorInfo().getErrorUsingId(error);
-                                if(errorInfo != null){
+                                ErrorInfo errorInfo = DataSource.getAppDataSource(Application.getApp()).getErrorInfo().getErrorUsingId(error.getUuid());
+                                if (errorInfo != null) {
                                     DataSource.getAppDataSource(Application.getApp()).getErrorInfo().deleteError(errorInfo);
                                 }
 
@@ -57,16 +54,14 @@ public class NetworkManager {
                     @Override
                     public void onError(ANError anError) {
                         //an error occurred and couldn't save the log to the server
-                        SharedPreferences sharedPreferences = Application.getApp().getSharedPreferences("TEMP", Context.MODE_PRIVATE);
-                        final String error = sharedPreferences.getString("errCODE","");
+                        //if is not available in the db add it.
+                        //SharedPreferences sharedPreferences = Application.getApp().getSharedPreferences("TEMP", Context.MODE_PRIVATE);
+                        //final String errCODE = sharedPreferences.getString("errCODE","");
                         AsyncTask.execute(new Runnable() {
                             @Override
                             public void run() {
                                 // Insert Data
-                                ErrorInfo errorInfo = DataSource.getAppDataSource(Application.getApp()).getErrorInfo().getErrorUsingId(error);
-                                if(errorInfo == null){
-                                    DataSource.getAppDataSource(Application.getApp()).getErrorInfo().insertError(Vodalytics.latestError);
-                                }
+                                insertLogToDbIfUnique(error);
 
                                 Log.i("Response", "onResponse: error");
 
@@ -76,27 +71,57 @@ public class NetworkManager {
                 });
     }
 
-    public void checkTheCurrentConnectionQuality() {
+    public void checkTheCurrentConnectionQuality(final ErrorInfo error) {
+        //If there is network check quality else save to db directly.
+
+        //Case No Network add add to the db
+        /*if(NetworkUtils.isNetworkConnected(Application.getApp())){
+            insertLogToDbIfUnique(error);
+        }else{
+        //Case network check quality.
+        if (NetworkUtils.isConnectedFast(Application.getApp())) { // fast then send logs
+            sendReportToServer(error);
+        } else { //slow then don't send to servers and check to save to the db if not already there
+            insertLogToDbIfUnique(error);
+        }
+
+        }*/
+
         // Getting current ConnectionQuality
+
         ConnectionQuality connectionQuality = AndroidNetworking.getCurrentConnectionQuality();
         if (connectionQuality == ConnectionQuality.EXCELLENT) {
             // save to server
-            sendReportToServer();
-            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.EXCELLENT);
+            sendReportToServer(error);
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: " + ConnectionQuality.EXCELLENT);
         } else if (connectionQuality == ConnectionQuality.MODERATE) {
             // save to server
-            sendReportToServer();
-            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.MODERATE);
+            sendReportToServer(error);
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: " + ConnectionQuality.MODERATE);
         } else if (connectionQuality == ConnectionQuality.POOR) {
             // do something
-            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.POOR);
-            sendReportToServer();
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: " + ConnectionQuality.POOR);
+            sendReportToServer(error);
 
         } else if (connectionQuality == ConnectionQuality.UNKNOWN) {
             // do something
-            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: "+ConnectionQuality.UNKNOWN);
-            sendReportToServer();
+            Log.i("NetworkManger", "checkTheCurrentConnectionQuality: " + ConnectionQuality.UNKNOWN);
+            sendReportToServer(error);
 
         }
+
+    }
+
+    private void insertLogToDbIfUnique(final ErrorInfo error) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                // Insert Data
+                ErrorInfo errorInfo = DataSource.getAppDataSource(Application.getApp()).getErrorInfo().getErrorUsingId(error.getUuid());
+                if (errorInfo != null) {
+                    DataSource.getAppDataSource(Application.getApp()).getErrorInfo().insertError(errorInfo);
+                }
+            }
+        });
     }
 }

@@ -21,7 +21,6 @@ public class Vodalytics {
     private static Application application;
     private ArrayList<String> screensOpened = new ArrayList<>();
 
-    public static ErrorInfo latestError;
     private Vodalytics(){
         if(vodalytics !=null)
             throw new RuntimeException("Use getInstance() method to get the single instance of the class.");
@@ -123,11 +122,10 @@ public class Vodalytics {
     }
     public static void log(String msg){
         ErrorInfo error = new ErrorInfo(msg);
-        latestError = error;
-        SharedPreferences sharedPreferences = application.getSharedPreferences("TEMP", Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString("errCODE",error.getUuid()).apply();
+        //SharedPreferences sharedPreferences = application.getSharedPreferences("TEMP", Context.MODE_PRIVATE);
+        //sharedPreferences.edit().putString("errCODE",error.getUuid()).apply();
         NetworkManager networkManager = new NetworkManager();
-        networkManager.sendCrashLogToServer();
+        networkManager.sendCrashLogToServer(error);
 
     }
     public static void log(String key,String msg){
