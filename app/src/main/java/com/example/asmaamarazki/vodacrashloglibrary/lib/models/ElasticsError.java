@@ -1,15 +1,18 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib.models;
 
-public class ElasticsData {
-    DeviceData deviceData;
+public class ElasticsError extends  BaseElastics{
     ErrorCodes errorCodes;;
-    Journey journey;
-    UserData userData;
 
-    public ElasticsData() {
+    public ElasticsError() {
     }
 
-    public ElasticsData(DeviceData deviceData, ErrorCodes errorCodes, Journey journey, UserData userData) {
+    public ElasticsError(DeviceData deviceData, Journey journey, ErrorCodes errorCodes) {
+        super(deviceData, journey);
+        this.errorCodes = errorCodes;
+    }
+
+    public ElasticsError(DeviceData deviceData, UserData userData, Journey journey, ErrorCodes errorCodes) {
+        super(deviceData,journey,userData);
         this.deviceData = deviceData;
         this.errorCodes = errorCodes;
         this.journey = journey;

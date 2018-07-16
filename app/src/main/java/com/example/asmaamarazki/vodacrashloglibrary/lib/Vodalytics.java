@@ -10,16 +10,28 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.asmaamarazki.vodacrashloglibrary.lib.Utilities.Constants;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.BaseElastics;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.DeviceData;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.ElasticsError;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.ElasticsMap;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.ErrorCodes;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.Journey;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.models.UserData;
+import com.example.asmaamarazki.vodacrashloglibrary.lib.network.NetworkManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class Vodalytics {
     private static volatile Vodalytics vodalytics;
     private static Application application;
     private ArrayList<String> screensOpened = new ArrayList<>();
+    private UserData userData;
+    private DeviceData deviceData;
 
     private Vodalytics(){
         if(vodalytics !=null)
@@ -34,7 +46,7 @@ public class Vodalytics {
 
             @Override
             public void onActivityStarted(Activity activity) {
-                addScreensOpend(activity.getClass().getSimpleName());
+                addScreensOpened(activity.getClass().getSimpleName());
                 //activity.getCallingActivity()
 
             }
@@ -46,7 +58,7 @@ public class Vodalytics {
                     @Override
                     public void onFragmentResumed(@NonNull FragmentManager fm, @NonNull Fragment f) {
                         super.onFragmentResumed(fm, f);
-                        addScreensOpend(f.getClass().getSimpleName());
+                        addScreensOpened(f.getClass().getSimpleName());
                         /*
                         AsyncTask.execute(new Runnable() {
                             @Override
@@ -63,8 +75,6 @@ public class Vodalytics {
                 }, true);
 
                 }
-
-
 
             @Override
             public void onActivityPaused(Activity activity) {
@@ -107,19 +117,16 @@ public class Vodalytics {
     }
 
 
-    public ArrayList<String> getScreensOpened() {
+    private ArrayList<String> getScreensOpened() {
         return screensOpened;
     }
 
-    public void addScreensOpend(final String screenOpend) {
+    private void addScreensOpened(final String screenOpend) {
         this.screensOpened.add(screenOpend);
 
         Log.e("TAG", "addScreensOpend: " + screensOpened.toString() );
     }
 
-    public static void log(Throwable throwable){
-
-    }
     public static void log(String msg){
         ErrorInfo error = new ErrorInfo(msg);
         //SharedPreferences sharedPreferences = application.getSharedPreferences("TEMP", Context.MODE_PRIVATE);
@@ -128,24 +135,21 @@ public class Vodalytics {
         networkManager.sendCrashLogToServer(error);
 
     }
-    public static void log(String key,String msg){
+    public static void log(String key,HashMap<String,String> errorMap){
+        with(application).initElasticsMap(errorMap);
+
 
     }
-
-
-
-    private void log(String errorCode , String errorMsg , boolean isNetworkError, String rawResponse,Throwable throwable){
-        initElastics( errorCode ,  errorMsg ,  isNetworkError,  rawResponse, throwable);
+    public static void log(Throwable throwable){
+        with(application).initElasticsError(throwable);
         //check connectivity then call network client or room
 
     }
 
-
-    private void initElastics(String errorCode , String errorMsg , boolean isNetworkError, String rawResponse,Throwable throwable){
-      //set elastics data
+    private void initElastics(){
         // set device data
-       /* DeviceData deviceData = new DeviceData(NetworkUtils.isWifiConnected(application.getApplicationContext()),
-                        NetworkUtils.isMobileConnected(application.getApplicationContext(),
+       /*  deviceData = new DeviceData(NetworkUtils.isWifiConnected(application.getApplicationContext()),
+                NetworkUtils.isMobileConnected(application.getApplicationContext(),
                         PhoneUtils.getDeviceName(),
                         PhoneUtils.getAndroidVersion()));
 
@@ -154,17 +158,39 @@ public class Vodalytics {
         for (int i=0;i<Configurations.getAllUsers().size();i++){
             otherAccounts.add(Configurations.getAllUsers().get(i).getUserAccountInfoModel().getEncryptMsisdn());
         }
-        //Configurations.getAllUsers().get(0).getUserAccountInfoModel().getEncryptMsisdn();
 
-        UserData userData = new UserData(LoggedUser.getInstance().isSeamless(),LoggedUser.getInstance().getAccount().getEncryptMsisdn(), otherAccounts,
-                LoggedUser.getInstance().getAccount().getRatePlanCode(), LoggedUser.getInstance().getAccount().getTariffModelName() ,LoggedUser.getInstance().getAccount().getAccountInfoRoles());
+        userData = new UserData(LoggedUser.getInstance().isSeamless(),LoggedUser.getInstance().getAccount().getEncryptMsisdn(), otherAccounts,
+                LoggedUser.getInstance().getAccount().getRatePlanCode(), LoggedUser.getInstance().getAccount().getTariffModelName()
+                ,LoggedUser.getInstance().getAccount().getAccountInfoRoles());*/
 
-        //set error codes
-
-        ErrorCodes errorCodes = new ErrorCodes(Constants.API_URL,rawResponse,isNetworkError,errorCode,errorMsg);
-        elasticsData =new ElasticsData(deviceData,errorCodes,new Journey(screensOpend.toString()),userData);
-
-*/
     }
+    private ElasticsError initElasticsError(Throwable throwable){
+      //set elastics data
+        initElastics();
+        //default data for network error
+        boolean isNetworkError=true;
+        String rawResponse="";
+        int errorCode=-999;
+        String errorMsg="";
+
+        //Business error
+     /*   if (throwable instanceof MCareException) {
+            isNetworkError=false;
+            errorCode=(((MCareException) throwable).getErrorCode());
+            errorMsg=ErrorCodeUtility.getErrorMessage(errorCode);
+            rawResponse=((MCareBusinessException)throwable).getRawServerResponse();
+        }
+*/
+        //set error codes
+        ErrorCodes errorCodes = new ErrorCodes(Constants.API_URL,rawResponse,isNetworkError,String.valueOf(errorCode),errorMsg);
+        return new ElasticsError(deviceData,userData,new Journey(screensOpened.toString()),errorCodes);
+
+
+    }
+    private ElasticsMap initElasticsMap(HashMap<String,String> errorMap){
+        initElastics();
+        return new ElasticsMap(deviceData,new Journey(screensOpened.toString()),userData,errorMap);
+    }
+
 }
 
