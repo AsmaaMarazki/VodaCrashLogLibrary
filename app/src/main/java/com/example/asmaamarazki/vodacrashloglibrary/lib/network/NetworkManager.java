@@ -1,8 +1,5 @@
 package com.example.asmaamarazki.vodacrashloglibrary.lib.network;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.androidnetworking.AndroidNetworking;
@@ -11,7 +8,6 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.ParsedRequestListener;
 import com.example.asmaamarazki.vodacrashloglibrary.Application;
-import com.example.asmaamarazki.vodacrashloglibrary.lib.Vodalytics;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.DataSource;
 import com.example.asmaamarazki.vodacrashloglibrary.lib.database.entities.ErrorInfo;
 
@@ -25,6 +21,7 @@ public class NetworkManager {
     }
 
     private void sendReportToServer(final ErrorInfo error) {
+
         AndroidNetworking.post(ElasticEndPoints.ENDPOINT_ELASTIC_SAVE_CRASH)
                 //.addQueryParameter("test","2")
                 .addBodyParameter("userId", "1") // will send the Crash log object here
@@ -36,10 +33,10 @@ public class NetworkManager {
                     public void onResponse(BaseResponse response) {
                         //Handle the return of success of saving to server
                         //clear the item from db if there
-                        AsyncTask.execute(new Runnable() {
+                        new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                // Insert Data
+                                // Delete log if already there.
                                 ErrorInfo errorInfo = DataSource.getAppDataSource(Application.getApp()).getErrorInfo().getErrorUsingId(error.getUuid());
                                 if (errorInfo != null) {
                                     DataSource.getAppDataSource(Application.getApp()).getErrorInfo().deleteError(errorInfo);
@@ -48,7 +45,7 @@ public class NetworkManager {
                                 Log.i("Response", "onResponse: Success");
 
                             }
-                        });
+                        }).start();
                     }
 
                     @Override
@@ -57,7 +54,7 @@ public class NetworkManager {
                         //if is not available in the db add it.
                         //SharedPreferences sharedPreferences = Application.getApp().getSharedPreferences("TEMP", Context.MODE_PRIVATE);
                         //final String errCODE = sharedPreferences.getString("errCODE","");
-                        AsyncTask.execute(new Runnable() {
+                        new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 // Insert Data
@@ -65,8 +62,9 @@ public class NetworkManager {
 
                                 Log.i("Response", "onResponse: error");
 
+
                             }
-                        });
+                        }).start();
                     }
                 });
     }
@@ -113,7 +111,7 @@ public class NetworkManager {
     }
 
     private void insertLogToDbIfUnique(final ErrorInfo error) {
-        AsyncTask.execute(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 // Insert Data
@@ -122,6 +120,6 @@ public class NetworkManager {
                     DataSource.getAppDataSource(Application.getApp()).getErrorInfo().insertError(errorInfo);
                 }
             }
-        });
+        }).start();
     }
 }
